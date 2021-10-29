@@ -1,45 +1,43 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"reflect"
-	"strconv"
+	"sync"
+	"time"
 )
 
-type MyType struct {
-	i    int
-	name string
-}
+func Do(ctx context.Context, wg *sync.WaitGroup) {
+	ctx, cancle := context.WithTimeout(ctx, time.Second*2)
+	defer func() {
+		cancle()
+		wg.Done()
+	}()
 
-func (mt *MyType) SetI(i int) {
-	mt.i = i
-}
+	done := make(chan struct{}, 1) // 执行成功的channel
+	go func(ctx context.Context) {
+		fmt.Println("go goroutine")
+		time.Sleep(time.Second * 10)
+		done <- struct{}{} // 发送完成的信号
+	}(ctx)
 
-func (mt *MyType) SetName(name string) {
-	mt.name = name
-}
+	select {
+	case <-ctx.Done(): // 超时
+		fmt.Printf("timeout,err:%v\n", ctx.Err())
+	case <-time.After(3 * time.Second): // 超时第二种方法
+		fmt.Printf("after 1 sec.")
+	case <-done: // 程序正常结束
+		fmt.Println("done")
+	}
 
-func (mt *MyType) String() string {
-	return fmt.Sprintf("%p", mt) + "--name:" + mt.name + " i:" + strconv.Itoa(mt.i)
 }
 
 func main() {
-	myType := &MyType{22, "golang"}
-	//fmt.Println(myType)     // 就是检查一下myType对象内容
-	//println("---------------")
-
-	// mtV := reflect.ValueOf(&myType).Elem()
-	// 也可以使用
-	mtV := reflect.ValueOf(myType)
-
-	fmt.Println("Before:", mtV.MethodByName("String").Call(nil)[0])
-
-	params := make([]reflect.Value, 1)
-	params[0] = reflect.ValueOf(18)
-	mtV.MethodByName("SetI").Call(params)
-
-	params[0] = reflect.ValueOf("reflection test")
-	mtV.MethodByName("SetName").Call(params)
-
-	fmt.Println("After:", mtV.MethodByName("String").Call(nil)[0])
+	fmt.Println("main")
+	ctx := context.Background()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	Do(ctx, &wg)
+	wg.Wait()
+	fmt.Println("finish")
 }
