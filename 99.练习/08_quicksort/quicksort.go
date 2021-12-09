@@ -1,25 +1,29 @@
-package main
+package quicksort
 
 import (
-	"fmt"
-	q "main/08_quicksort"
+	"math/rand"
+	"time"
 )
 
-func main() {
-	c := q.GenerateS(100) //[]int{3, 1, 5, 6, 4, 34, 4, 2, 3, 51, 23}
-	QuickSort(c, 0, len(c)-1)
-	fmt.Println(c)
+func GenerateS(n int) (ret []int) {
+	ret = make([]int, n)
+	rand.Seed(time.Now().Unix())
+	for i := 0; i < n; i++ {
+		ret = append(ret, rand.Intn(100))
+	}
+	return
 }
 
 func QuickSort(nums []int, i, j int) {
 	if i >= j {
 		return
 	}
-	index := Partition2(nums, i, j)
+	index := Partition(nums, i, j)
 	QuickSort(nums, i, index-1)
 	QuickSort(nums, index+1, j)
 }
 
+// 填坑
 func Partition(nums []int, i, j int) int {
 	pivot := nums[i]
 	for i < j {
@@ -35,6 +39,7 @@ func Partition(nums []int, i, j int) int {
 	nums[i] = pivot
 	return i
 }
+
 func Partition2(nums []int, i, j int) int {
 	pivot := nums[i]
 	for i < j {
