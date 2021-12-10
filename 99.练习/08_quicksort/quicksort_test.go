@@ -1,6 +1,7 @@
 package quicksort
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -14,3 +15,10 @@ func TestQuickSort(t *testing.T) {
 }
 
 // 枚举 分治 递归 贪心 动态规划
+func setup() {
+	fmt.Println("Before all tests")
+}
+
+func teardown() {
+	fmt.Println("After all tests")
+}
